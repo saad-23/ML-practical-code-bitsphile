@@ -1,0 +1,26 @@
+name,category,price,rating,reviews,in_stock
+Wireless Headphones,Electronics,2999,4.5,320,Yes
+USB-C Cable,Electronics,499,4.7,850,Yes
+Laptop Stand,Electronics,1499,4.3,120,Yes
+Mechanical Keyboard,Electronics,4999,4.8,450,Yes
+200W LED Monitor,Electronics,8999,4.4,200,Yes
+Python Programming Guide,Books,599,4.6,180,Yes
+Machine Learning Basics,Books,799,4.5,150,Yes
+Data Science Handbook,Books,1299,4.7,220,Yes
+Web Development 101,Books,699,4.4,110,Yes
+AI Applications,Books,899,4.8,190,Yes
+Wireless Mouse,Electronics,799,4.3,280,Yes
+Phone Stand,Electronics,349,4.2,95,Yes
+Desk Lamp LED,Electronics,1299,4.6,310,Yes
+HDMI Cable,Electronics,299,4.1,420,Yes
+Portable Charger,Electronics,1599,4.5,580,Yes
+Microphone Studio,Electronics,3499,4.7,160,Yes
+Webcam 1080p,Electronics,2499,4.4,270,Yes
+Tablet Holder,Electronics,599,4.2,85,Yes
+USB Hub 7-Port,Electronics,1999,4.5,190,Yes
+External SSD,Electronics,5999,4.8,340,Yes
+Advanced Python,Books,1099,4.7,200,Yes
+Statistics Fundamentals,Books,899,4.6,175,Yes
+Cloud Computing Guide,Books,1199,4.5,145,No
+Docker Mastery,Books,999,4.8,220,Yes
+Kubernetes Handbook,Books,1399,4.7,135,Yes

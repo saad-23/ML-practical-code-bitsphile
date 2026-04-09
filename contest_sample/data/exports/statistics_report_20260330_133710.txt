@@ -1,0 +1,37 @@
+==================================================
+DATA SUMMARY REPORT
+==================================================
+
+Total Records: 25
+Total Features: 6
+Duplicate Rows: 0
+Memory Usage: 4.98 KB
+
+No missing values found!
+
+==================================================
+NUMERIC COLUMNS STATISTICS
+==================================================
+
+price:
+  Mean: 1913.0000
+  Median: 1199.0000
+  Std Dev: 2044.1747
+  Min: 299.0000
+  Max: 8999.0000
+
+rating:
+  Mean: 4.5320
+  Median: 4.5000
+  Std Dev: 0.2056
+  Min: 4.1000
+  Max: 4.8000
+
+reviews:
+  Mean: 255.8000
+  Median: 200.0000
+  Std Dev: 171.9355
+  Min: 85.0000
+  Max: 850.0000
+
+==================================================

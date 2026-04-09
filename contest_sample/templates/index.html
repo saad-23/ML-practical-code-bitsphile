@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - AI Recommendation System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h1 class="display-4">Welcome to AI System</h1>
+        <p class="lead text-muted">Intelligent product recommendations powered by Machine Learning</p>
+    </div>
+    <div class="col-lg-4">
+        <img src="https://via.placeholder.com/300x200?text=AI+Powered" class="img-fluid rounded" alt="AI">
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-upload text-primary" style="font-size: 2rem;"></i>
+                <h5 class="card-title mt-3">Upload Data</h5>
+                <p class="card-text">Upload CSV files for analysis</p>
+                <a href="/upload" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
+                <h5 class="card-title mt-3">Analysis</h5>
+                <p class="card-text">View statistical summaries</p>
+                <a href="/analysis" class="btn btn-success btn-sm">Analyze</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+                <h5 class="card-title mt-3">Recommendations</h5>
+                <p class="card-text">AI-powered suggestions</p>
+                <a href="/recommendations" class="btn btn-warning btn-sm">Explore</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-download text-info" style="font-size: 2rem;"></i>
+                <h5 class="card-title mt-3">Export</h5>
+                <p class="card-text">Download results</p>
+                <a href="/export" class="btn btn-info btn-sm">Export</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Key Features</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Data Sanitization:</strong> Automated cleaning with Pandas
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Smart Filtering:</strong> Dynamic filters by category, price, rating
+                    </li>
+                    <li class="list-group-item">
+                        <strong>ML Recommendations:</strong> Content-based & collaborative filtering
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Statistical Analysis:</strong> Comprehensive data insights
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Visualizations:</strong> Interactive charts and graphs
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Search Engine:</strong> Full-text search with advanced filters
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Quick Guide</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li><strong>Upload or Use Sample Data:</strong> Start with a CSV file or sample data</li>
+                    <li><strong>Clean Your Data:</strong> Remove duplicates, handle missing values</li>
+                    <li><strong>View Analytics:</strong> Check statistical summaries and distributions</li>
+                    <li><strong>Get Recommendations:</strong> Use smart filters for AI suggestions</li>
+                    <li><strong>Search Products:</strong> Find specific items with advanced filters</li>
+                    <li><strong>Export Results:</strong> Download cleaned data and recommendations</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 p-4 bg-light rounded">
+    <h4><i class="bi bi-star-fill"></i> Currently Loaded: Sample Dataset</h4>
+    <p class="mb-0">The system is loaded with a sample product dataset containing 25 products (Electronics & Books).
+    Start exploring by going to the <strong>Analysis</strong> page to see statistics, or use <strong>Recommendations</strong>
+    to get AI-powered product suggestions.</p>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feature-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

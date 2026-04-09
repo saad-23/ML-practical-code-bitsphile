@@ -1,0 +1,17 @@
+student_id,Name,gender,age,city,department,semester,gpa,attendance_percent,enrollment_date,fees,remarks
+ST-1001,Ali Raza,Male,20,Lahore,CS,3,3.2,85,15/01/2024,120000,Good
+ST-1002,Sana Khan,Female,19,Karachi,SE,2,3.8,91,15/02/2024,125000,
+,Ahmed Noor,Male,21, lahore ,IT,4,2.9,68,10/03/2024,,Need improvement
+ST-1004,Ayesha Malik,Female,22,Islamabad,CS,5,3.6,95,01/04/2024,130000,Excellent
+ST-1005,Hamza Ali,Male,,Peshawar,EE,1,2.1,55,30/01/2024,110000,Low attendance
+ST-1006,Noor Fatima,Female,20,Karachi,SE,3,4.1,102,20/02/2024,127000,Attendance anomaly
+,Bilal Ahmed,Male,200,Quetta,CS,2,1.8,40,05/03/2024,100000,Age outlier
+ST-1008,Hira Sheikh,Female,18,Lahore,IT,1,3,88,10/01/2024,,
+ST-1009,Usman Tariq,Male,23,Multan,CS,6,4.8,93,28/02/2024,150000,GPA outlier
+ST-1010,Maryam Iqbal,Female,21,Sargodha,SE,4,3.4,76,14/02/2024,-5000,Fee error
+ST-1011,Zainab Ashraf,Female,20,Faisalabad,IT,3,2.7,,12/03/2024,117000,Missing attendance
+ST-1012,Umer Farooq,Male,19,Karachi,CS,2,3.1,82,25/01/2024,121000,Missing income
+ST-1013,Ali Raza,Male,20,Lahore,CS,3,3.2,85,15/01/2024,120000,Duplicate row
+ST-1014,  Sara   Noor ,Female,22,Islamabad,SE,5,3.5,89,03-18-2024,129000,Extra spaces in name
+ST-1015,Imran Qureshi,Male,17,Rawalpindi,EE,1,2.4,63,05/04/2024,112000,Scholarship coding issue
+ST-1016,Komal Aziz,Female,24,Hyderabad,IT,7,3.9,97,22/03/2024,135000,Senior semester

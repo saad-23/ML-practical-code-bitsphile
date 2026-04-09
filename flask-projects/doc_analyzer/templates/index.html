@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Analyzer · Text Extractor</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      --bg0:   #0d0f18;
+      --bg1:   #13162a;
+      --bg2:   #1a1e35;
+      --bg3:   #20253d;
+      --border:#2a3050;
+      --a1:    #6366f1;   /* indigo */
+      --a2:    #8b5cf6;   /* violet */
+      --a-glow:rgba(99,102,241,.25);
+      --tx1:   #e2e8f0;
+      --tx2:   #94a3b8;
+      --tx3:   #64748b;
+      --ok:    #10b981;
+      --warn:  #f59e0b;
+      --err:   #ef4444;
+      --r:     12px;
+    }
+
+    /* ── Reset & base ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg0);
+      color: var(--tx1);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0,0,0,.5);
+    }
+
+    .logo {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--a1), var(--a2));
+      border-radius: 11px;
+      display: grid; place-items: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px var(--a-glow);
+    }
+
+    header h1 {
+      font-size: 20px; font-weight: 700;
+      background: linear-gradient(135deg,#a5b4fc,#c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p { font-size: 12px; color: var(--tx3); margin-top: 2px; }
+
+    .badge {
+      margin-left: auto;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--tx3); font-size: 11px; font-weight: 600;
+      padding: 4px 12px; border-radius: 50px;
+      letter-spacing: .4px;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 36px 24px; }
+
+    /* ── Upload zone ────────────────────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 20px;
+      padding: 72px 32px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg1);
+      transition: all .3s ease;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.over {
+      border-color: var(--a1);
+      background: rgba(99,102,241,.04);
+      box-shadow: 0 0 60px var(--a-glow);
+    }
+
+    .drop-zone.over { transform: scale(1.015); }
+
+    .dz-icon {
+      font-size: 60px; color: var(--a1);
+      margin-bottom: 18px;
+      filter: drop-shadow(0 0 18px var(--a-glow));
+    }
+
+    .drop-zone h2 { font-size: 24px; margin-bottom: 8px; }
+    .drop-zone > p { color: var(--tx2); font-size: 14px; margin-bottom: 28px; }
+
+    .up-btn {
+      background: linear-gradient(135deg, var(--a1), var(--a2));
+      color: #fff; border: none;
+      padding: 13px 36px; border-radius: 50px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all .3s;
+    }
+    .up-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 32px var(--a-glow); }
+
+    #file-input { display: none; }
+
+    /* format badges */
+    .formats {
+      margin-top: 22px;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 7px;
+    }
+    .fmt {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 600; color: var(--tx3);
+      letter-spacing: .3px;
+    }
+
+    /* ── Progress ───────────────────────────────────────────────────────── */
+    #progress-box { display: none; margin-top: 24px; }
+
+    .prog-bar {
+      height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--a1), var(--a2), var(--a1));
+      background-size: 200% 100%;
+      animation: shimmer 1.4s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .prog-label {
+      text-align: center; margin-top: 12px;
+      color: var(--tx2); font-size: 13px;
+    }
+
+    /* ── Results ────────────────────────────────────────────────────────── */
+    #results { display: none; margin-top: 32px; }
+
+    /* error banner */
+    .err-banner {
+      display: none;
+      background: rgba(239,68,68,.1);
+      border: 1px solid var(--err);
+      color: var(--err);
+      padding: 14px 20px; border-radius: var(--r);
+      display: none; align-items: center; gap: 10px; font-size: 14px;
+    }
+
+    /* ── File info card ─────────────────────────────────────────────────── */
+    .file-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 22px;
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .type-badge {
+      width: 58px; height: 58px; border-radius: 13px; flex-shrink: 0;
+      display: grid; place-items: center;
+      font-family: monospace; font-size: 14px; font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .file-name { font-size: 17px; font-weight: 600; }
+    .file-sub  { font-size: 12px; color: var(--tx2); margin-top: 4px; }
+
+    .reset-btn {
+      margin-left: auto;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--tx2); padding: 8px 16px; border-radius: 8px;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: all .2s;
+    }
+    .reset-btn:hover { border-color: var(--a1); color: #a5b4fc; }
+
+    /* ── Stats row ──────────────────────────────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 18px 14px; text-align: center;
+      transition: all .2s;
+    }
+    .stat:hover { border-color: var(--a1); transform: translateY(-3px); }
+
+    .stat-val {
+      font-size: 30px; font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-lbl { font-size: 11px; color: var(--tx3); margin-top: 4px;
+                text-transform: uppercase; letter-spacing: .6px; }
+
+    /* ── Toolbar ────────────────────────────────────────────────────────── */
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      flex: 1 1 220px;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 14px;
+      transition: border-color .2s;
+    }
+    .search-wrap:focus-within { border-color: var(--a1); }
+
+    .search-wrap input {
+      background: none; border: none; outline: none;
+      color: var(--tx1); font-size: 14px; flex: 1;
+    }
+    .search-wrap input::placeholder { color: var(--tx3); }
+
+    .hit-badge {
+      display: none;
+      background: var(--a1); color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 50px;
+    }
+
+    .x-btn {
+      background: none; border: none; color: var(--tx3);
+      cursor: pointer; display: none; padding: 0;
+    }
+
+    .tb-btn {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--tx2); padding: 9px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      transition: all .2s;
+    }
+    .tb-btn:hover { border-color: var(--a1); color: #a5b4fc; background: var(--bg3); }
+    .tb-btn.ok    { border-color: var(--ok); color: var(--ok); }
+
+    /* ── Content viewer ─────────────────────────────────────────────────── */
+    .viewer {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+
+    .viewer-head {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 11px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .viewer-head span { font-size: 13px; color: var(--tx3); }
+
+    .viewer-body {
+      padding: 24px;
+      max-height: 620px; overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13.5px; line-height: 1.85;
+      color: var(--tx1); white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* scrollbar */
+    .viewer-body::-webkit-scrollbar { width: 6px; }
+    .viewer-body::-webkit-scrollbar-track  { background: var(--bg1); }
+    .viewer-body::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
+    .viewer-body::-webkit-scrollbar-thumb:hover { background: var(--a1); }
+
+    mark         { background: var(--warn); color:#000; border-radius:2px; padding:0 2px; }
+    mark.current { background: var(--a1);   color:#fff; }
+
+    /* ── Metadata panel ─────────────────────────────────────────────────── */
+    .meta-panel {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); margin-top: 18px; overflow: hidden;
+    }
+
+    .meta-head {
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background .2s;
+    }
+    .meta-head:hover { background: var(--bg3); }
+    .meta-head h3 { font-size: 14px; color: var(--tx2); }
+    .meta-chevron { transition: transform .3s; color: var(--tx3); }
+
+    .meta-body {
+      display: none;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .meta-item  { background: var(--bg1); border-radius: 8px; padding: 10px 14px; }
+    .meta-key   { font-size: 10px; color: var(--tx3); text-transform: uppercase;
+                  letter-spacing: .6px; margin-bottom: 3px; }
+    .meta-value { font-size: 13px; word-break: break-all; }
+
+    /* ── Empty-content state ────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--tx3); font-size: 14px;
+    }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
+
+    /* ── Animations ─────────────────────────────────────────────────────── */
+    .fade-in { animation: fadeIn .4s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .container  { padding: 20px 14px; }
+      .drop-zone  { padding: 48px 16px; }
+      .stats      { grid-template-columns: repeat(2, 1fr); }
+      header      { padding: 12px 16px; }
+      .toolbar    { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo"><i class="fas fa-file-magnifying-glass" style="color:#fff"></i></div>
+  <div>
+    <h1>Document Analyzer</h1>
+    <p>Upload any document · extract every bit of text instantly</p>
+  </div>
+  <span class="badge">50 MB max</span>
+</header>
+
+<!-- ──── Main ────────────────────────────────────────────────────────────── -->
+<div class="container">
+
+  <!-- Upload area -->
+  <div id="upload-section">
+    <div class="drop-zone" id="drop-zone">
+      <div class="dz-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+      <h2>Drop your document here</h2>
+      <p>or click the button below to pick a file from your device</p>
+
+      <button class="up-btn" onclick="document.getElementById('file-input').click()">
+        <i class="fas fa-folder-open"></i> Browse Files
+      </button>
+
+      <input type="file" id="file-input"
+             accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.csv,
+                     .txt,.md,.log,.py,.js,.ts,.html,.css,
+                     .json,.xml,.yaml,.yml,.ini,.cfg,.env,.rtf,
+                     .png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.webp" />
+
+      <div class="formats">
+        <span class="fmt">PDF</span>  <span class="fmt">DOCX</span>
+        <span class="fmt">PPTX</span> <span class="fmt">XLSX</span>
+        <span class="fmt">CSV</span>  <span class="fmt">TXT</span>
+        <span class="fmt">MD</span>   <span class="fmt">JSON</span>
+        <span class="fmt">XML</span>  <span class="fmt">YAML</span>
+        <span class="fmt">PY</span>   <span class="fmt">JS</span>
+        <span class="fmt">HTML</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">PNG</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">JPG</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">BMP</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">TIFF</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">WEBP</span>
+        <span class="fmt" style="background:rgba(236,72,153,.15);border-color:#be185d;color:#f0abcb">GIF</span>
+        <span class="fmt">+ more</span>
+      </div>
+    </div>
+
+    <div id="progress-box">
+      <div class="prog-bar"><div class="prog-fill"></div></div>
+      <p class="prog-label"><i class="fas fa-spinner fa-spin"></i>&nbsp; Analyzing document…</p>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="fade-in">
+
+    <!-- Error -->
+    <div class="err-banner" id="err-banner">
+      <i class="fas fa-circle-exclamation"></i>
+      <span id="err-text"></span>
+    </div>
+
+    <!-- File info -->
+    <div class="file-card" id="file-card">
+      <div class="type-badge" id="type-badge"></div>
+      <div>
+        <div class="file-name" id="fname"></div>
+        <div class="file-sub"  id="fsub"></div>
+      </div>
+      <button class="reset-btn" onclick="resetUI()">
+        <i class="fas fa-arrow-upload"></i> New File
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val" id="s-words">–</div>
+        <div class="stat-lbl">Words</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="s-chars">–</div>
+        <div class="stat-lbl">Characters</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="s-pages">–</div>
+        <div class="stat-lbl" id="s-pages-lbl">Pages</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="s-lines">–</div>
+        <div class="stat-lbl">Lines</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="s-read">–</div>
+        <div class="stat-lbl">Min Read</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="fas fa-magnifying-glass" style="color:var(--tx3)"></i>
+        <input type="text" id="srch" placeholder="Search in content…" oninput="doSearch()" />
+        <span class="hit-badge" id="hit-badge"></span>
+        <button class="x-btn" id="x-srch" onclick="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="tb-btn" id="copy-btn" onclick="copyAll(this)">
+        <i class="fas fa-copy"></i> Copy All
+      </button>
+      <button class="tb-btn" onclick="downloadTxt()">
+        <i class="fas fa-download"></i> Download .txt
+      </button>
+      <button class="tb-btn" id="wrap-btn" onclick="toggleWrap(this)">
+        <i class="fas fa-align-left"></i> Wrap
+      </button>
+    </div>
+
+    <!-- Viewer -->
+    <div class="viewer">
+      <div class="viewer-head">
+        <span><i class="fas fa-align-left"></i>&nbsp; Extracted Content</span>
+        <span id="line-info"></span>
+      </div>
+      <div class="viewer-body" id="viewer-body"></div>
+    </div>
+
+    <!-- Metadata -->
+    <div class="meta-panel" id="meta-panel" style="display:none">
+      <div class="meta-head" onclick="toggleMeta()">
+        <h3><i class="fas fa-circle-info"></i>&nbsp; Document Metadata</h3>
+        <i class="fas fa-chevron-down meta-chevron" id="meta-chev"></i>
+      </div>
+      <div class="meta-body" id="meta-body">
+        <div class="meta-grid" id="meta-grid"></div>
+      </div>
+    </div>
+
+  </div><!-- /#results -->
+</div><!-- /.container -->
+
+<!-- ──── Script ──────────────────────────────────────────────────────────── -->
+<script>
+"use strict";
+
+/* ── state ──────────────────────────────────────────────────────────────── */
+let rawContent  = '';
+let currentFile = '';
+let wrapped     = true;
+
+/* ── file-type cosmetics ─────────────────────────────────────────────────── */
+const TYPE_MAP = {
+  pdf:  { bg:'#ef4444', lbl:'PDF' },
+  docx: { bg:'#2563eb', lbl:'DOC' },
+  doc:  { bg:'#2563eb', lbl:'DOC' },
+  pptx: { bg:'#d97706', lbl:'PPT' },
+  ppt:  { bg:'#d97706', lbl:'PPT' },
+  xlsx: { bg:'#16a34a', lbl:'XLS' },
+  xls:  { bg:'#16a34a', lbl:'XLS' },
+  csv:  { bg:'#0d9488', lbl:'CSV' },
+  txt:  { bg:'#64748b', lbl:'TXT' },
+  md:   { bg:'#7c3aed', lbl:'MD'  },
+  py:   { bg:'#0284c7', lbl:'PY'  },
+  js:   { bg:'#ca8a04', lbl:'JS'  },
+  ts:   { bg:'#0369a1', lbl:'TS'  },
+  html: { bg:'#b45309', lbl:'HTM' },
+  css:  { bg:'#0e7490', lbl:'CSS' },
+  json: { bg:'#6b7280', lbl:'JSON'},
+  xml:  { bg:'#9333ea', lbl:'XML' },
+  yaml: { bg:'#15803d', lbl:'YAML'},
+  yml:  { bg:'#15803d', lbl:'YAML'},
+  log:  { bg:'#475569', lbl:'LOG' },
+  // images
+  png:  { bg:'#be185d', lbl:'PNG' },
+  jpg:  { bg:'#be185d', lbl:'JPG' },
+  jpeg: { bg:'#be185d', lbl:'JPG' },
+  bmp:  { bg:'#9d174d', lbl:'BMP' },
+  tiff: { bg:'#831843', lbl:'TIFF'},
+  tif:  { bg:'#831843', lbl:'TIFF'},
+  gif:  { bg:'#c026d3', lbl:'GIF' },
+  webp: { bg:'#7e22ce', lbl:'WEBP'},
+};
+
+/* ── number formatting ─────────────────────────────────────────────────── */
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return '' + n;
+}
+
+function fmtBytes(b) {
+  if (b < 1024)        return b + ' B';
+  if (b < 1024*1024)   return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(2) + ' MB';
+}
+
+/* ── drag & drop ──────────────────────────────────────────────────────── */
+const dropZone = document.getElementById('drop-zone');
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) uploadFile(f);
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) uploadFile(e.target.files[0]);
+});
+
+/* ── upload & parse ───────────────────────────────────────────────────── */
+function uploadFile(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+
+  document.getElementById('progress-box').style.display = 'block';
+  document.getElementById('results').style.display      = 'none';
+  document.getElementById('err-banner').style.display   = 'none';
+
+  fetch('/upload', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('progress-box').style.display = 'none';
+      if (data.error && !data.content) {
+        showError(data.error);
+      } else {
+        showResults(data);
+      }
+    })
+    .catch(err => {
+      document.getElementById('progress-box').style.display = 'none';
+      showError('Upload failed: ' + err.message);
+    });
+}
+
+/* ── error display ────────────────────────────────────────────────────── */
+function showError(msg) {
+  const banner = document.getElementById('err-banner');
+  document.getElementById('err-text').textContent = msg;
+  banner.style.display = 'flex';
+  document.getElementById('results').style.display = 'block';
+  /* hide the good-weather sections */
+  ['file-card','meta-panel'].forEach(id =>
+    document.getElementById(id).style.display = 'none');
+  document.querySelector('.stats').style.display   = 'none';
+  document.querySelector('.toolbar').style.display = 'none';
+  document.querySelector('.viewer').style.display  = 'none';
+}
+
+/* ── results display ──────────────────────────────────────────────────── */
+function showResults(data) {
+  rawContent  = data.content || '';
+  currentFile = data.filename || 'document';
+
+  const ext      = currentFile.split('.').pop().toLowerCase();
+  const typeInfo = TYPE_MAP[ext] || { bg:'#6366f1', lbl: ext.slice(0,4).toUpperCase() };
+
+  /* file card */
+  const badge = document.getElementById('type-badge');
+  badge.style.background = typeInfo.bg;
+  badge.style.color      = '#fff';
+  badge.textContent      = typeInfo.lbl;
+
+  document.getElementById('fname').textContent =
+    currentFile;
+  document.getElementById('fsub').textContent  =
+    `${data.file_type} Document · ${fmtBytes(data.size)}`;
+
+  /* stats */
+  const readMin = Math.max(1, Math.ceil(data.words / 200));
+  const lines   = rawContent.split('\n').length;
+
+  document.getElementById('s-words').textContent = fmt(data.words);
+  document.getElementById('s-chars').textContent = fmt(data.chars);
+  document.getElementById('s-pages').textContent = fmt(data.pages);
+  document.getElementById('s-lines').textContent = fmt(lines);
+  document.getElementById('s-read').textContent  = readMin;
+
+  const pagesLabels = { xlsx:'Sheets', xls:'Sheets', csv:'Rows',
+                         pptx:'Slides', ppt:'Slides',
+                         png:'Image',  jpg:'Image', jpeg:'Image',
+                         bmp:'Image',  tiff:'Image', tif:'Image',
+                         gif:'Image',  webp:'Image' };
+  document.getElementById('s-pages-lbl').textContent =
+    pagesLabels[ext] || 'Pages';
+
+  document.getElementById('line-info').textContent = fmt(lines) + ' lines';
+
+  /* render content */
+  renderContent(rawContent);
+
+  /* metadata */
+  buildMeta(data.metadata);
+
+  /* show all good-weather sections */
+  document.getElementById('err-banner').style.display = 'none';
+  document.getElementById('file-card').style.display  = 'flex';
+  document.querySelector('.stats').style.display      = 'grid';
+  document.querySelector('.toolbar').style.display    = 'flex';
+  document.querySelector('.viewer').style.display     = 'block';
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior:'smooth' });
+}
+
+/* ── render content (with optional search highlight) ─────────────────── */
+function escHtml(s) {
+  return s
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function renderContent(text, query) {
+  const body = document.getElementById('viewer-body');
+
+  if (!text.trim()) {
+    body.innerHTML = `<div class="empty-state">
+      <i class="fas fa-ghost"></i>No text could be extracted from this document.
+    </div>`;
+    return;
+  }
+
+  let html = escHtml(text);
+
+  if (query) {
+    const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+    html = html.replace(re, m => `<mark>${m}</mark>`);
+  }
+
+  body.innerHTML = html;
+}
+
+/* ── search ──────────────────────────────────────────────────────────── */
+function doSearch() {
+  const q    = document.getElementById('srch').value.trim();
+  const hitB = document.getElementById('hit-badge');
+  const xBtn = document.getElementById('x-srch');
+
+  if (!q) {
+    renderContent(rawContent);
+    hitB.style.display = 'none';
+    xBtn.style.display = 'none';
+    return;
+  }
+
+  xBtn.style.display = 'inline-block';
+  renderContent(rawContent, q);
+
+  const marks = document.querySelectorAll('#viewer-body mark');
+  hitB.textContent   = marks.length;
+  hitB.style.display = 'inline-block';
+  hitB.style.background = marks.length ? 'var(--a1)' : 'var(--err)';
+
+  if (marks.length) {
+    marks[0].classList.add('current');
+    marks[0].scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+}
+
+function clearSearch() {
+  document.getElementById('srch').value = '';
+  doSearch();
+}
+
+/* ── copy all ─────────────────────────────────────────────────────────── */
+function copyAll(btn) {
+  navigator.clipboard.writeText(rawContent).then(() => {
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => {
+      btn.innerHTML = '<i class="fas fa-copy"></i> Copy All';
+      btn.classList.remove('ok');
+    }, 2200);
+  });
+}
+
+/* ── download ─────────────────────────────────────────────────────────── */
+function downloadTxt() {
+  const base = currentFile.substring(0, currentFile.lastIndexOf('.')) || currentFile;
+  const blob = new Blob([rawContent], { type:'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'),
+                 { href: url, download: base + '_extracted.txt' });
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ── word-wrap toggle ─────────────────────────────────────────────────── */
+function toggleWrap(btn) {
+  wrapped = !wrapped;
+  document.getElementById('viewer-body').style.whiteSpace =
+    wrapped ? 'pre-wrap' : 'pre';
+  btn.innerHTML = wrapped
+    ? '<i class="fas fa-align-left"></i> Wrap'
+    : '<i class="fas fa-grip-lines"></i> No Wrap';
+}
+
+/* ── metadata panel ───────────────────────────────────────────────────── */
+function buildMeta(meta) {
+  const panel = document.getElementById('meta-panel');
+  const grid  = document.getElementById('meta-grid');
+  const pairs = Object.entries(meta || {}).filter(([,v]) => v && v !== 'None');
+
+  if (!pairs.length) { panel.style.display = 'none'; return; }
+
+  grid.innerHTML = pairs.map(([k,v]) => `
+    <div class="meta-item">
+      <div class="meta-key">${k}</div>
+      <div class="meta-value">${escHtml(v)}</div>
+    </div>`).join('');
+
+  panel.style.display = 'block';
+}
+
+function toggleMeta() {
+  const body = document.getElementById('meta-body');
+  const chev = document.getElementById('meta-chev');
+  const open = body.style.display === 'block';
+  body.style.display        = open ? 'none'  : 'block';
+  chev.style.transform      = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+/* ── reset ─────────────────────────────────────────────────────────────── */
+function resetUI() {
+  rawContent = '';
+  currentFile = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('srch').value        = '';
+  document.getElementById('results').style.display = 'none';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>

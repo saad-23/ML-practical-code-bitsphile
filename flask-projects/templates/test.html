@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Demo Page</title>
+    <style>
+        /* basic reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+
+        header, section, footer { padding: 60px 20px; }
+        header { background: url('../static/banner.jpg') center/cover no-repeat; color: white; text-align: center; }
+        header h1 { font-size: 3rem; margin-bottom: .5rem; }
+        header p { font-size: 1.25rem; }
+
+        nav { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0,0,0,.6); }
+        nav ul { display: flex; justify-content: center; list-style: none; }
+        nav a { color: white; padding: 15px 20px; text-decoration: none; transition: background .3s; }
+        nav a:hover { background: rgba(255,255,255,.2); }
+
+        #about { background: #f4f4f4; }
+        #about .container { max-width: 800px; margin: auto; }
+        #about button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+
+        #contact .container { max-width: 600px; margin: auto; }
+        #contact form { display: flex; flex-direction: column; }
+        #contact input, #contact textarea { margin-bottom: 15px; padding: 10px; }
+        #contact button { width: 120px; padding: 10px; cursor: pointer; }
+
+        /* responsive tweaks */
+        @media (max-width: 600px) {
+            header h1 { font-size: 2rem; }
+            nav ul { flex-direction: column; }
+            nav a { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+
+
+<nav>
+    <ul>
+        <li><a href="#banner">Home</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+
+<header id="banner">
+    <h1 style="color:black">Welcome {{ title }} </h1>
+    <p>Responsive and interactive design example</p>
+    <a href="#about" style="display:inline-block;margin-top:20px;padding:10px 25px;background:#ff6f61;color:#fff;text-decoration:none;border-radius:4px;">Learn More</a>
+</header>
+
+<div>
+    <ul>
+        {% for item in countries %}
+            <li>{{item}}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<section id="about">
+    <div class="container">
+        <h2> <a href="{{ url_for('welcome') }}">Welcome Us</a> </h2>
+        <p>We build modern, responsive web pages with interactive components that adapt to any device.</p>
+        <p id="extraText" style="display:none;">
+            Our approach emphasizes clean code, user engagement, and accessibility. Click the button again
+            to hide this message.
+        </p>
+        <button id="toggleInfo">Read more</button>
+    </div>
+</section>
+
+<section id="contact">
+    <div class="container">
+        <h2>Contact Us</h2>
+        <form id="contactForm">
+            <input type="text" id="name" placeholder="Your name" required />
+            <input type="email" id="email" placeholder="Your email" required />
+            <textarea id="message" rows="5" placeholder="Your message" required></textarea>
+            <button type="submit">Send</button>
+        </form>
+        <p id="formFeedback" style="color:green;display:none;">Thanks for getting in touch!</p>
+    </div>
+</section>
+
+<script>
+    // toggle about text
+    document.getElementById('toggleInfo').addEventListener('click', function() {
+        const extra = document.getElementById('extraText');
+        if (extra.style.display === 'none') {
+            extra.style.display = 'block';
+            this.textContent = 'Read less';
+        } else {
+            extra.style.display = 'none';
+            this.textContent = 'Read more';
+        }
+    });
+
+    // handle contact form submission (dummy)
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        this.reset();
+        document.getElementById('formFeedback').style.display = 'block';
+        setTimeout(() => { document.getElementById('formFeedback').style.display = 'none'; }, 3000);
+    });
+</script>
+
+</body>
+</html>

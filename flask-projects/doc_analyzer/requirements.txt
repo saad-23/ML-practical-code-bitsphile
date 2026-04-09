@@ -1,0 +1,8 @@
+flask
+werkzeug
+pdfplumber
+python-docx
+python-pptx
+openpyxl
+pytesseract
+Pillow

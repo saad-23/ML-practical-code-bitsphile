@@ -1,0 +1,21 @@
+Name,Age,Salary,Department,Email,Join_Date
+John Doe,28,65000,Sales,john.doe@company.com,2020-01-15
+Jane Smith,34,78000,Engineering,jane.smith@company.com,2019-03-22
+Bob Johnson,45,92000,Management,bob.johnson@company.com,2018-07-10
+Alice Brown,,85000,Marketing,alice.brown@company.com,2021-05-18
+Charlie Wilson,38,  72000  ,Sales,charlie.wilson@company.com,2020-11-30
+  Diana Lee  ,29,95000,Engineering,diana.lee@company.com,2021-02-05
+Eve Davis,52,105000,Management,eve.davis@company.com,2017-09-01
+Frank Miller,31,68000,Sales,frank.miller@company.com,2022-01-20
+Grace Taylor,27,58000,Support,grace.taylor@company.com,2022-06-15
+Henry Anderson,39,88000,Engineering,henry.anderson@company.com,2019-04-12
+Isabel Thomas,33,81000,Marketing,  ISABEL.THOMAS@COMPANY.COM  ,2020-08-25
+Jack Jackson,35,7500000,Management,jack.jackson@company.com,2018-02-14
+John Doe,28,65000,Sales,john.doe@company.com,2020-01-15
+Kevin White,41,95000,Engineering,kevin.white@company.com,2019-01-10
+Laura Harris,26,,Sales,laura.harris@company.com,2021-10-05
+Michael Clark,48,110000,Management,michael.clark@company.com,2017-05-20
+Nancy Lewis,29,72000,Marketing,nancy.lewis@company.com,2021-07-12
+Oscar Martinez,44,98000,Engineering,oscar.martinez@company.com,2018-11-08
+Patricia Young,31,76000,Support,patricia.young@company.com,2022-03-19
+Quentin Robinson,37,,Engineering,quentin.robinson@company.com,2020-09-14

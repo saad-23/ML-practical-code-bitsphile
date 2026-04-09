@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Recommendations - AI Recommendation System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-star"></i> Smart Recommendations</h1>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="filterForm">
+                    <div class="mb-3">
+                        <label for="budget" class="form-label">Budget (₹)</label>
+                        <input type="range" class="form-range" id="budget" name="budget"
+                               min="0" max="10000" value="5000" step="100">
+                        <small class="text-muted">₹<span id="budgetValue">5000</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="minRating" class="form-label">Minimum Rating</label>
+                        <select class="form-select" id="minRating" name="min_rating">
+                            <option value="0">Any Rating</option>
+                            <option value="3">3.0 stars & up</option>
+                            <option value="3.5">3.5 stars & up</option>
+                            <option value="4">4.0 stars & up</option>
+                            <option value="4.5">4.5 stars & up</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Get Recommendations
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Recommendation Results -->
+        {% if recommendations %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Smart Picks</h5>
+            </div>
+            <div class="card-body">
+                {% if recommendations.smart_picks %}
+                    <p class="text-muted mb-3">{{ recommendations.reason }}</p>
+                    <div class="row">
+                        {% for product in recommendations.smart_picks %}
+                        <div class="col-md-6 mb-3">
+                            <div class="product-card">
+                                <h6>{{ product.name }}</h6>
+                                <p class="mb-1"><strong>Price:</strong> ₹{{ product.price }}</p>
+                                <p class="mb-1"><strong>Rating:</strong>
+                                    <span class="badge bg-warning text-dark">
+                                        ★ {{ product.rating }}
+                                    </span>
+                                </p>
+                                <p class="text-muted small">{{ product.get('category', 'N/A') }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">{{ recommendations.reason }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-wallet2"></i> Budget Friendly</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recommendations.budget_friendly %}
+                            {% for product in recommendations.budget_friendly[:3] %}
+                            <div class="mb-2 pb-2 border-bottom">
+                                <p class="mb-0"><strong>{{ product.name }}</strong></p>
+                                <small class="text-muted">₹{{ product.price }}</small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">No budget-friendly options found</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-star-fill"></i> Highly Rated</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recommendations.highly_rated %}
+                            {% for product in recommendations.highly_rated[:3] %}
+                            <div class="mb-2 pb-2 border-bottom">
+                                <p class="mb-0"><strong>{{ product.name }}</strong></p>
+                                <small class="text-muted">★ {{ product.rating }}</small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">No highly-rated products found</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            <h5><i class="bi bi-info-circle"></i> Get Started</h5>
+            <p class="mb-0">Adjust the filters on the left and click "Get Recommendations" to see AI-powered product suggestions based on your preferences.</p>
+        </div>
+        {% endif %}
+
+        <!-- Search Section -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Search Products</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/search">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search products..."
+                               name="search_query" required>
+                        <button class="btn btn-secondary" type="submit">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if search_results is not none %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Search Results ({{ search_results|length }} found)</h5>
+            </div>
+            <div class="card-body">
+                {% if search_results|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in search_results %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.category }}</td>
+                                    <td>₹{{ product.price }}</td>
+                                    <td><span class="badge bg-warning text-dark">★ {{ product.rating }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No products found matching your search.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('budget').addEventListener('input', function(e) {
+        document.getElementById('budgetValue').textContent = e.target.value;
+    });
+</script>
+{% endblock %}

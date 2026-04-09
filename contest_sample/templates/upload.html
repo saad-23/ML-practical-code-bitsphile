@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Data - AI Recommendation System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-upload"></i> Upload & Manage Data</h1>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Upload CSV File</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Choose CSV File</label>
+                        <input class="form-control form-control-lg" type="file" id="file" name="file" accept=".csv" required>
+                        <small class="form-text text-muted">Maximum file size: 16MB</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-upload"></i> Upload & Process
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Data Cleaning Options</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Automatic Cleaning:</strong></p>
+                <ul>
+                    <li><strong>Remove Duplicates:</strong> Deletes identical rows</li>
+                    <li><strong>Handle Missing Values:</strong> Fills with mean/median or removes rows</li>
+                    <li><strong>Remove Outliers (IQR):</strong> Identifies and removes extreme values</li>
+                    <li><strong>Normalize Numeric Data:</strong> Scales values to 0-1 range</li>
+                    <li><strong>Clean Text:</strong> Strips whitespace and converts to lowercase</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">CSV Format Guide</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Required Format:</strong></p>
+                <pre><code>name,category,price,rating
+Product1,Electronics,999,4.5
+Product2,Books,599,4.2</code></pre>
+                <hr>
+                <p><strong>Column Requirements:</strong></p>
+                <ul>
+                    <li>First row = column headers</li>
+                    <li>Columns separated by comma</li>
+                    <li>No special characters in values</li>
+                </ul>
+            </div>
+        </div>
+
+        {% if current_file %}
+        <div class="card mt-3 bg-success bg-opacity-10 border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Current File</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>{{ current_file.name }}</strong></p>
+                <small class="text-muted">
+                    Rows: {{ current_file.rows }} | Columns: {{ current_file.cols }}
+                </small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-5">
+    <div class="alert alert-info" role="alert">
+        <h5 class="alert-heading"><i class="bi bi-info-circle"></i> Tips</h5>
+        <ul class="mb-0">
+            <li>Use the sample CSV below to test the system</li>
+            <li>You can upload multiple files (latest will be used)</li>
+            <li>Data is automatically validated and cleaned</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
